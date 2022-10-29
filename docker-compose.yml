@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:13
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: blockbooks
+  redis:
+    image: redis:7.0-alpine
+  service:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - 2411:2411
+    depends_on:
+      - postgres
+      - redis
+    restart: on-failure
+    environment:
+      PORT: 2411
+      PG_HOST: postgres
+      PG_USERNAME: root
+      PG_PASSWORD: root
+      PG_DATABASE: blockbooks
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command: npm run start:dev
