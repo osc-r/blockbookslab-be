@@ -22,7 +22,7 @@ export class AuthService {
     const siweMessage = new SiweMessage(message);
     await siweMessage.validate(signature);
 
-    const address = siweMessage.address;
+    const address = siweMessage.address.toLowerCase();
     let user = await this.userRepository.findByAddress(address);
 
     if (!user) {
