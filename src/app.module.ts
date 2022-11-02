@@ -21,6 +21,7 @@ import { Transaction } from './entity/transaction.entity';
 import { Erc721Transaction } from './entity/erc721Transaction.entity';
 import { Erc20Transaction } from './entity/erc20Transaction.entity';
 import { Erc1155Transaction } from './entity/erc1155Transaction.entity';
+import { ContactModule } from './contact/contact.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { Erc1155Transaction } from './entity/erc1155Transaction.entity';
     UserModule,
     TransactionModule,
     WalletModule,
+    ContactModule,
   ],
   providers: [
     JwtStrategy,
