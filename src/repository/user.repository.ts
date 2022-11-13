@@ -26,11 +26,15 @@ export class UserRepository extends Repository<User> {
       newUser.address = address;
       user = await queryRunner.manager.save(newUser);
 
+      console.log({ user });
+
       const newWallet = new Wallet();
       newWallet.name = 'default_wallet';
       newWallet.address = address;
       newWallet.createdBy = user;
-      await queryRunner.manager.save(newWallet);
+      const wallet = await queryRunner.manager.save(newWallet);
+
+      console.log({ wallet });
 
       await queryRunner.commitTransaction();
     } catch (err) {

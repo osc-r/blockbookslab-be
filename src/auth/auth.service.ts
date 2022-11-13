@@ -1,6 +1,6 @@
 import * as EpnsAPI from '@epnsproject/sdk-restapi';
 import * as ethers from 'ethers';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { generateNonce, SiweMessage } from 'siwe';
 import { VerifyLoginDto } from 'src/dto/verifyLogin.dto';
 import { UserRepository } from 'src/repository/user.repository';
@@ -8,6 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 
 @Injectable({})
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private jwtService: JwtService,
     private userRepository: UserRepository,
@@ -23,9 +25,12 @@ export class AuthService {
     await siweMessage.validate(signature);
 
     const address = siweMessage.address.toLowerCase();
+    this.logger.log(`find user for address ${address}`);
     let user = await this.userRepository.findByAddress(address);
 
     if (!user) {
+      this.logger.log(`User not found`);
+
       user = await this.userRepository.createNewUser(address);
     }
 
