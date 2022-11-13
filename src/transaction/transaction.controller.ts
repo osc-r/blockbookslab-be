@@ -1,32 +1,38 @@
 import { InjectQueue } from '@nestjs/bull';
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { Queue } from 'bull';
 import { Public } from 'src/helper/jwt-auth.guard';
+import { TransactionService } from './transaction.service';
 
 @Controller('transactions')
 export class TransactionController {
   constructor(
     @InjectQueue('transaction') private readonly transactionQueue: Queue,
+    private transactionService: TransactionService,
   ) {}
 
-  @Public()
   @Get()
-  async test() {
-    const id = Date.now();
+  async getTransaction(@Req() req) {
+    return this.transactionService.getTransaction(req.user?.userId, req.query);
+  }
+
+  @Public()
+  @Get(':address')
+  async generateTransaction(@Param() params) {
+    const address = params.address;
 
     return {
-      id,
-      q: await this.transactionQueue.add(
+      jobDetail: await this.transactionQueue.add(
         'transcode',
-        { address: '0x03d15ec11110dda27df907e12e7ac996841d95e4' },
-        { jobId: id },
+        { address: address },
+        { jobId: address },
       ),
     };
   }
 
   @Public()
   @Get(':id')
-  async test1(@Param() params) {
+  async getQueueStatus(@Param() params) {
     const id = params.id;
 
     const job = await this.transactionQueue.getJob(id);

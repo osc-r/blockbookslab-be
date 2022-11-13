@@ -10,6 +10,10 @@ import { Erc20Transaction } from 'src/entity/erc20Transaction.entity';
 import { Erc1155TransactionRepository } from 'src/repository/erc1155Transaction.repository';
 import { Erc721TransactionRepository } from 'src/repository/erc721Transaction.repository';
 import { InternalTransactionRepository } from 'src/repository/internalTransaction.repository';
+import { Erc1155Transaction } from 'src/entity/erc1155Transaction.entity';
+import { Erc721Transaction } from 'src/entity/erc721Transaction.entity';
+import { TransactionDetail } from 'src/entity/transactionDetail.entity';
+import { TransactionDetailRepository } from 'src/repository/transactionDetail.repository';
 
 @Processor('transaction')
 @Injectable({})
@@ -20,6 +24,7 @@ export class TransactionProcessor {
     private erc20TransactionRepository: Erc20TransactionRepository,
     private erc721TransactionRepository: Erc721TransactionRepository,
     private erc1155TransactionRepository: Erc1155TransactionRepository, // private internalTransactionRepository: InternalTransactionRepository,
+    private transactionDetailRepository: TransactionDetailRepository,
   ) {}
 
   private readonly logger = new Logger(TransactionProcessor.name);
@@ -128,7 +133,7 @@ export class TransactionProcessor {
           );
 
           const contractName = contract.data.result[0].ContractName;
-          this.logger.debug(`contractName = ${contractName}`);
+          this.logger.debug(`${item.to} ----> contractName = ${contractName}`);
 
           this.logger.debug(`get internal tx with hash = ${item.hash}`);
 
@@ -145,25 +150,35 @@ export class TransactionProcessor {
           );
 
           this.logger.debug(
-            `hash(${item.hash}) got internalTx.length = ${internalTx.data.result}`,
+            `hash(${item.hash}) got internalTx.length = ${internalTx.data.result.length}`,
           );
 
           if (
             internalTx.data.result.length === 1 &&
             internalTx.data.result[0].value !== '0'
           ) {
+            const detail = new TransactionDetail();
+            detail.actionContractName = contractName;
+            detail.actionFunctionName = item.functionName.split('(')[0];
+            detail.actionValue = internalTx.data.result[0].value;
+            detail.txHash = item.hash;
+
             console.log(
-              `[FOUND] ${item.functionName} ${internalTx.data.result[0].value} from ${contractName}`,
+              `[FOUND] ${item.functionName.split('(')[0]} ${
+                internalTx.data.result[0].value
+              } from ${contractName} ---- hash: ${item.hash}, to: ${item.to}`,
             );
+            this.transactionDetailRepository.save(detail);
           }
           if (done.length === txList.length) {
+            console.log('DONE');
             clearInterval(timer);
             res('Action generation completed');
           }
         } catch (error) {
           console.log('ERR => ', error);
         }
-      }, 500);
+      }, 800);
     });
   }
 
@@ -172,44 +187,47 @@ export class TransactionProcessor {
     job: Job<{ address: string; chainId: string }>,
     cb: DoneCallback,
   ) {
-    // this.logger.debug('Start get transaction');
+    this.logger.debug('Start get transaction');
 
-    // const success = await this.getData<Transaction>(
-    //   job.data.address,
-    //   job.data.chainId || '1',
-    //   'txlist',
-    // );
+    const success = await this.getData<Transaction>(
+      job.data.address,
+      job.data.chainId || '1',
+      'txlist',
+    );
 
-    // this.logger.debug({ pages: success });
+    this.logger.debug({ pages: success });
 
-    // if (success) {
-    //   const result = Promise.all([
-    //     this.getData<Erc20Transaction>(
-    //       job.data.address,
-    //       job.data.chainId || '1',
-    //       'tokentx',
-    //     ),
-    //     this.getData<Erc20Transaction>(
-    //       job.data.address,
-    //       job.data.chainId || '1',
-    //       'tokennfttx',
-    //     ),
-    //     this.getData<Erc20Transaction>(
-    //       job.data.address,
-    //       job.data.chainId || '1',
-    //       'token1155tx',
-    //     ),
-    //   ]);
+    if (success) {
+      const result = Promise.all([
+        this.getData<Erc20Transaction>(
+          job.data.address,
+          job.data.chainId || '1',
+          'tokentx',
+        ),
+        this.getData<Erc721Transaction>(
+          job.data.address,
+          job.data.chainId || '1',
+          'tokennfttx',
+        ),
+        this.getData<Erc1155Transaction>(
+          job.data.address,
+          job.data.chainId || '1',
+          'token1155tx',
+        ),
+      ]);
 
-    //   console.log('result =====> ', await result);
-    // }
+      console.log('result =====> ', await result);
+    }
 
-    // this.logger.debug('End get transaction');
+    this.logger.debug('End get transaction');
 
     this.logger.debug('Start action generator');
-    await this.actionGenerator();
+    const actionResult = await this.actionGenerator();
+    this.logger.debug({ actionResult });
     this.logger.debug('End action generator');
 
-    cb(new Error('Failed to fetch transaction'));
+    actionResult
+      ? cb(null, actionResult)
+      : cb(new Error('Failed to fetch transaction'));
   }
 }

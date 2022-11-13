@@ -6,12 +6,12 @@ export class LabelController {
   constructor(private labelService: LabelService) {}
 
   @Get()
-  async getContact(@Req() req) {
+  async getLabel(@Req() req) {
     return await this.labelService.getLabel(req.user.userId);
   }
 
   @Post()
-  async postContact(@Req() req) {
+  async postLabel(@Req() req) {
     return await this.labelService.createLabel(req.user.userId, req.body.name);
   }
 }

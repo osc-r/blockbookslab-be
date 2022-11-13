@@ -6,7 +6,6 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { Transaction } from './transaction.entity';
 import { TxLabels } from './txLabels.entity';
 import { User } from './user.entity';
 
@@ -15,15 +14,20 @@ export class TransactionDetail {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => Transaction, (transaction) => transaction.transactionDetails)
-  @JoinColumn({
-    name: 'tx_hash',
-    foreignKeyConstraintName: 'fk_transaction_detail_transaction_hash',
-  })
-  txHash: Transaction;
+  @Column({ nullable: false, name: 'tx_hash' })
+  txHash: string;
 
   @Column({ nullable: false, default: '' })
   memo: string;
+
+  @Column({ nullable: true, default: null })
+  actionFunctionName: string;
+
+  @Column({ nullable: true, default: null })
+  actionContractName: string;
+
+  @Column({ nullable: true, default: null })
+  actionValue: string;
 
   @ManyToOne(() => User, (user) => user.contacts)
   @JoinColumn({

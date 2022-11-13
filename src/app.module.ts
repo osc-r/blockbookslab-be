@@ -58,7 +58,7 @@ import { LabelModule } from './label/label.module';
           Erc1155Transaction,
         ],
         synchronize: true,
-        logging: true,
+        logging: false,
       }),
       inject: [ConfigService],
     }),
