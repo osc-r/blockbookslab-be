@@ -8,15 +8,15 @@ export class Erc1155TransactionRepository extends Repository<Erc1155Transaction>
     super(Erc1155Transaction, dataSource.createEntityManager());
   }
 
-  async findOneByHash(hash: string) {
+  async findOneByHash(hash: string, userId: string) {
     const [tx]: Erc1155Transaction[] = await this.dataSource.query(
       `
     SELECT et.*, td.id AS "transactionDetailId", td.memo AS "memo", w."name" AS "ownerName" FROM erc1155_transaction et 
       LEFT JOIN transaction_detail td ON td.tx_hash = et.hash
       LEFT JOIN wallet w ON w.address = et."from" OR w.address = et."to"
-      WHERE et.hash = $1
+      WHERE et.hash = $1 AND w.created_by = $2
       `,
-      [hash],
+      [hash, userId],
     );
 
     return tx as {

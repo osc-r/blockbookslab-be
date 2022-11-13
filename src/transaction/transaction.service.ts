@@ -35,15 +35,15 @@ export class TransactionService {
         switch (i.type) {
           case 'ERC20':
             return this.erc20TransactionRepository
-              .findOneByHash(i.hash)
+              .findOneByHash(i.hash, userId)
               .then((erc20) => erc20ToTxResponse(erc20));
           case 'ERC721':
             return this.erc721TransactionRepository
-              .findOneByHash(i.hash)
+              .findOneByHash(i.hash, userId)
               .then((erc721) => erc721ToTxResponse(erc721));
           case 'ERC1155':
             return this.erc1155TransactionRepository
-              .findOneByHash(i.hash)
+              .findOneByHash(i.hash, userId)
               .then((erc1155) => erc1155ToTxResponse(erc1155));
           case 'NORMAL':
             return this.transactionRepository
