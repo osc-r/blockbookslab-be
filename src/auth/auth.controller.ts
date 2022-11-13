@@ -8,6 +8,12 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
+  @Get('test')
+  async test() {
+    return { msg: 'up and running' };
+  }
+
+  @Public()
   @Get('nonce')
   async getNonce() {
     return await this.authService.getNonce();
