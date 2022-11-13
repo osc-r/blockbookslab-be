@@ -36,6 +36,10 @@ export class AuthService {
 
     return { accessToken: this.jwtService.sign({ sub: user.id }) };
   }
+
+  async testCreateUser(address: string) {
+    return await this.userRepository.createNewUser(address);
+  }
 }
 
 // async sendNotification() {

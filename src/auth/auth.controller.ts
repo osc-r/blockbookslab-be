@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { VerifyLoginDto } from 'src/dto/verifyLogin.dto';
 import { Public } from 'src/helper/jwt-auth.guard';
@@ -8,9 +8,13 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
-  @Get('test')
-  async test() {
-    return { msg: 'up and running' };
+  @Get('test/:address')
+  async test(@Param() params) {
+    console.log({
+      env: process.env.NODE_ENV,
+      msg: 'up and running',
+    });
+    return await this.authService.testCreateUser(params.address);
   }
 
   @Public()
