@@ -1,4 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { TransactionDetailRequestDto } from 'src/dto/transactionDetailRequest.dto';
+import { Label } from 'src/entity/label.entity';
+import { TransactionDetail } from 'src/entity/transactionDetail.entity';
+import { TxLabels } from 'src/entity/txLabels.entity';
+import { User } from 'src/entity/user.entity';
 import {
   erc1155ToTxResponse,
   erc20ToTxResponse,
@@ -8,6 +13,8 @@ import { Erc1155TransactionRepository } from 'src/repository/erc1155Transaction.
 import { Erc20TransactionRepository } from 'src/repository/erc20Transaction.repository';
 import { Erc721TransactionRepository } from 'src/repository/erc721Transaction.repository';
 import { TransactionRepository } from 'src/repository/transaction.repository';
+import { TransactionDetailRepository } from 'src/repository/transactionDetail.repository';
+import { TxLabelsRepository } from 'src/repository/txLabels.repository';
 
 @Injectable({})
 export class TransactionService {
@@ -16,6 +23,8 @@ export class TransactionService {
     private erc20TransactionRepository: Erc20TransactionRepository,
     private erc721TransactionRepository: Erc721TransactionRepository,
     private erc1155TransactionRepository: Erc1155TransactionRepository,
+    private transactionDetailRepository: TransactionDetailRepository,
+    private txLabelsRepository: TxLabelsRepository,
   ) {}
 
   async getTransaction(
@@ -47,16 +56,23 @@ export class TransactionService {
               .then((erc1155) => erc1155ToTxResponse(erc1155));
           case 'NORMAL':
             return this.transactionRepository
-              .getNormalTransactionWithRelationshipByHash(i.hash)
-              .then((j) => ({
-                ...j,
-                owner: 'walletName',
+              .getNormalTransactionWithRelationshipByHash(i.hash, userId)
+              .then(async (j) => {
+                const labels =
+                  await this.txLabelsRepository.findByTxHashAndUserId(
+                    i.hash,
+                    userId,
+                  );
+                return {
+                  ...j,
+                  owner: j.ownerName,
+                  labels: labels,
 
-                rate: 1234,
-                tx_actions: null,
-                labels: [],
-                contact_name: null,
-              }));
+                  rate: 1234,
+                  tx_actions: null,
+                  contact_name: j.contactName,
+                };
+              });
         }
       });
 
@@ -74,5 +90,83 @@ export class TransactionService {
       console.log({ error });
       return error;
     }
+  }
+
+  async addMemo(req: TransactionDetailRequestDto, userId: string) {
+    const user = new User();
+    user.id = userId;
+
+    let txDetail = await this.transactionDetailRepository.findOne({
+      where: [{ createdBy: user, txHash: req.txHash }],
+    });
+    if (!txDetail) {
+      txDetail = new TransactionDetail();
+      txDetail.txHash = req.txHash;
+      txDetail.createdBy = user;
+    }
+    txDetail.memo = req.memo || '';
+    return await this.transactionDetailRepository.save(txDetail);
+  }
+
+  async addLabel(req: TransactionDetailRequestDto, userId: string) {
+    const user = new User();
+    user.id = userId;
+
+    let txDetail = await this.transactionDetailRepository.findOne({
+      where: [{ createdBy: user, txHash: req.txHash }],
+    });
+
+    if (!txDetail) {
+      txDetail = new TransactionDetail();
+      txDetail.txHash = req.txHash;
+      txDetail.createdBy = user;
+    }
+    if (req.txLabels)
+      txDetail.txLabels = req.txLabels.map((labelId) => {
+        const label = new Label();
+        label.id = labelId;
+
+        const txLabel = new TxLabels();
+        txLabel.label = label;
+        txLabel.createdBy = user;
+        txLabel.transactionDetail = txDetail;
+
+        return txLabel;
+      });
+
+    return await this.transactionDetailRepository.save(txDetail);
+  }
+
+  async createTransactionDetail(
+    req: TransactionDetailRequestDto,
+    userId: string,
+  ) {
+    const user = new User();
+    user.id = userId;
+
+    let txDetail = await this.transactionDetailRepository.findOne({
+      where: [{ createdBy: user, txHash: req.txHash }],
+    });
+
+    if (!txDetail) {
+      txDetail = new TransactionDetail();
+      txDetail.txHash = req.txHash;
+      txDetail.createdBy = user;
+    }
+    if (req.memo) txDetail.memo = req.memo || '';
+    if (req.txLabels)
+      txDetail.txLabels = req.txLabels.map((labelId) => {
+        const label = new Label();
+        label.id = labelId;
+
+        const txLabel = new TxLabels();
+        txLabel.label = label;
+        txLabel.createdBy = user;
+        txLabel.transactionDetail = txDetail;
+
+        return txLabel;
+      });
+
+    return await this.transactionDetailRepository.save(txDetail);
   }
 }

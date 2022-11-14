@@ -8,11 +8,7 @@ export class LabelService {
   constructor(private labelRepository: LabelRepository) {}
 
   async getLabel(userId: string) {
-    const user = new User();
-    user.id = userId;
-    return await this.labelRepository.findBy({
-      createdBy: user,
-    });
+    return await this.labelRepository.findByUserId(userId);
   }
 
   async createLabel(userId: string, name: string) {

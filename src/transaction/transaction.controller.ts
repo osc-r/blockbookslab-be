@@ -1,6 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
-import { Controller, Get, Param, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { Queue } from 'bull';
+import { TransactionDetailRequestDto } from 'src/dto/transactionDetailRequest.dto';
 import { Public } from 'src/helper/jwt-auth.guard';
 import { TransactionService } from './transaction.service';
 
@@ -31,7 +32,7 @@ export class TransactionController {
   }
 
   @Public()
-  @Get(':id')
+  @Get('status/:id')
   async getQueueStatus(@Param() params) {
     const id = params.id;
 
@@ -43,5 +44,32 @@ export class TransactionController {
     } else {
       return 'PENDING';
     }
+  }
+
+  @Post('/details')
+  async createTransactionDetail(@Req() req) {
+    const x = await this.transactionService.createTransactionDetail(
+      req.body,
+      req.user?.userId,
+    );
+    console.log(x);
+    return true;
+  }
+
+  @Post('/details/memo')
+  async createTransactionDetailMemo(@Req() req) {
+    const x = await this.transactionService.addMemo(req.body, req.user?.userId);
+    console.log(x);
+    return true;
+  }
+
+  @Post('/details/labels')
+  async createTransactionDetailLabels(@Req() req) {
+    const x = await this.transactionService.addLabel(
+      req.body,
+      req.user?.userId,
+    );
+    console.log(x);
+    return true;
   }
 }

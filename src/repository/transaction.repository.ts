@@ -69,74 +69,81 @@ export class TransactionRepository extends Repository<Transaction> {
     return { txList, totalItem: parseInt(totalItem[0].count) };
   }
 
-  async getNormalTransactionWithRelationshipByHash(hash: string) {
+  async getNormalTransactionWithRelationshipByHash(
+    hash: string,
+    userId: string,
+  ) {
     let tx = null;
     const ERC20 = [];
     const ERC721 = [];
     const ERC1155 = [];
 
     const q = `
-    SELECT a.*, td.memo, td."actionFunctionName", td."actionContractName", td."actionValue" FROM(
-      SELECT 
-        t.hash AS "tx_hash", 
-        'ETH' AS "symbol", 
-        '18' AS "tokenDecimal", 
-        t."from" AS "from_addr", 
-        t."to" AS "to_addr", 
-        t.value AS "tx_value", 
-        null AS "tokenId", 
-        t.gas AS "tx_gas", 
-        t.gas_price AS "tx_gas_price", 
-        t."time_stamp" AS "tx_timestamp", 
-        'NORMAL' AS "type" 
-      FROM "transaction" t
-      UNION ALL
-      SELECT 
-        et.hash AS "tx_hash",
-        et.token_symbol AS "symbol",
-        et.token_decimal  AS "tokenDecimal",
-        et."from" AS "from_addr",
-        et."to" AS "to_addr",
-        et.value AS "tx_value",
-        null AS "tokenId",
-        et.gas AS "tx_gas",
-        et.gas_price AS "tx_gas_price",
-        et."time_stamp" AS "tx_timestamp",
-        'ERC20' AS "type" 
-      FROM erc20_transaction et INNER JOIN "transaction" t ON t.hash = et.hash
-      UNION ALL
-      SELECT 
-        et1.hash AS "tx_hash",
-        et1.token_symbol AS "symbol",
-        et1.token_decimal  AS "tokenDecimal",
-        et1."from" AS "from_addr",
-        et1."to" AS "to_addr",
-        null AS "tx_value",
-        et1.token_id AS "tokenId",
-        et1.gas AS "tx_gas",
-        et1.gas_price AS "tx_gas_price",
-        et1."time_stamp" AS "tx_timestamp",
-        'ERC721' AS "type" 
-      FROM erc721_transaction et1 INNER JOIN "transaction" t ON t.hash = et1.hash
-      UNION ALL
-      SELECT 
-        et2.hash AS "tx_hash",
-        et2.token_symbol AS "symbol",
-        null AS "tokenDecimal",
-        et2."from" AS "from_addr",
-        et2."to" AS "to_addr",
-        et2.token_value AS "tx_value",
-        null AS "tokenId",
-        et2.gas AS "tx_gas",
-        et2.gas_price AS "tx_gas_price",
-        et2."time_stamp" AS "tx_timestamp",
-        'ERC1155' as "type" 
-      FROM erc1155_transaction et2 INNER JOIN "transaction" t ON t.hash = et2.hash
-    )a
-    LEFT JOIN transaction_detail td ON td.tx_hash = a.tx_hash
-    WHERE a.tx_hash = $1`;
+    SELECT a.*, td.memo, td."actionFunctionName", td."actionContractName", td."actionValue", w."name" AS "ownerName",
+      CASE WHEN a."from_addr" = w.address THEN FALSE ELSE TRUE END AS "isDeposit",
+      (SELECT c."name" FROM contact c WHERE c.created_by = w.created_by AND c.address = (CASE WHEN a."from_addr" = w.address THEN a."to_addr" ELSE a."from_addr" END)) AS "contactName"
+    FROM(
+        SELECT 
+          t.hash AS "tx_hash", 
+          'ETH' AS "symbol", 
+          '18' AS "tokenDecimal", 
+          t."from" AS "from_addr", 
+          t."to" AS "to_addr", 
+          t.value AS "tx_value", 
+          null AS "tokenId", 
+          t.gas AS "tx_gas", 
+          t.gas_price AS "tx_gas_price", 
+          t."time_stamp" AS "tx_timestamp", 
+          'NORMAL' AS "type" 
+        FROM "transaction" t
+        UNION ALL
+        SELECT 
+          et.hash AS "tx_hash",
+          et.token_symbol AS "symbol",
+          et.token_decimal  AS "tokenDecimal",
+          et."from" AS "from_addr",
+          et."to" AS "to_addr",
+          et.value AS "tx_value",
+          null AS "tokenId",
+          et.gas AS "tx_gas",
+          et.gas_price AS "tx_gas_price",
+          et."time_stamp" AS "tx_timestamp",
+          'ERC20' AS "type" 
+        FROM erc20_transaction et INNER JOIN "transaction" t ON t.hash = et.hash
+        UNION ALL
+        SELECT 
+          et1.hash AS "tx_hash",
+          et1.token_symbol AS "symbol",
+          et1.token_decimal  AS "tokenDecimal",
+          et1."from" AS "from_addr",
+          et1."to" AS "to_addr",
+          null AS "tx_value",
+          et1.token_id AS "tokenId",
+          et1.gas AS "tx_gas",
+          et1.gas_price AS "tx_gas_price",
+          et1."time_stamp" AS "tx_timestamp",
+          'ERC721' AS "type" 
+        FROM erc721_transaction et1 INNER JOIN "transaction" t ON t.hash = et1.hash
+        UNION ALL
+        SELECT 
+          et2.hash AS "tx_hash",
+          et2.token_symbol AS "symbol",
+          null AS "tokenDecimal",
+          et2."from" AS "from_addr",
+          et2."to" AS "to_addr",
+          et2.token_value AS "tx_value",
+          null AS "tokenId",
+          et2.gas AS "tx_gas",
+          et2.gas_price AS "tx_gas_price",
+          et2."time_stamp" AS "tx_timestamp",
+          'ERC1155' as "type" 
+        FROM erc1155_transaction et2 INNER JOIN "transaction" t ON t.hash = et2.hash
+      )a
+  LEFT JOIN transaction_detail td ON td.tx_hash = a.tx_hash
+  LEFT JOIN wallet w ON w.address = a."from_addr" OR w.address = a."to_addr"
+  WHERE a.tx_hash = $1 AND w.created_by = $2`;
 
-    const results = await this.query(q, [hash]);
+    const results = await this.query(q, [hash, userId]);
 
     results.forEach((i) => {
       switch (i.type) {
@@ -163,8 +170,6 @@ export class TransactionRepository extends Repository<Transaction> {
       action: null,
     };
 
-    const addr = '0x03d15ec11110dda27df907e12e7ac996841d95e4';
-
     if (ERC20.length !== 0 && ERC721.length !== 0 && ERC1155.length !== 0) {
     } else if (ERC721.length !== 0 && ERC1155.length !== 0) {
     } else if (ERC20.length !== 0 && ERC1155.length !== 0) {
@@ -190,10 +195,10 @@ export class TransactionRepository extends Repository<Transaction> {
       }
       if (tx.tx_value === '0' && ERC20.length === 2) {
         if (ERC20[0].symbol !== ERC20[1].symbol) {
-          const from = ERC20[0].from_addr === addr ? ERC20[0] : ERC20[1];
-          const to = ERC20[0].from_addr !== addr ? ERC20[0] : ERC20[1];
+          const from = ERC20[0].isDeposit === false ? ERC20[0] : ERC20[1];
+          const to = ERC20[0].isDeposit === true ? ERC20[0] : ERC20[1];
 
-          if (ERC20[0].from_addr === addr && ERC20[1].from_addr === addr) {
+          if (ERC20[0].from_addr === ERC20[1].from_addr) {
             response.action = 'Transfer ERC20 token';
           } else {
             response.action = `Swap ${ethers.utils.formatUnits(
@@ -209,13 +214,20 @@ export class TransactionRepository extends Repository<Transaction> {
         }
       }
     } else if (ERC721.length !== 0) {
+      if (ERC721.length === 1 && ERC721[0].isDeposit === true) {
+        response.action = `Mint ${ERC721[0].symbol} id: ${ERC721[0].tokenId}`;
+      }
     } else if (ERC1155.length !== 0) {
     } else {
       if (response.actionFunctionName) {
         response.symbol = response.actionContractName;
         response.tokenDecimal = 18;
         response.tx_value = response.actionValue;
-        response.memo = `${response.actionFunctionName} ${response.actionValue} ${response.actionContractName}`;
+        response.action = `${
+          response.actionFunctionName
+        } ${ethers.utils.formatEther(
+          ethers.BigNumber.from(response.actionValue),
+        )} ${response.actionContractName}`;
       }
     }
     return response;

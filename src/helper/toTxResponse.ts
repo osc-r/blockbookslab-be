@@ -1,4 +1,10 @@
-export const erc20ToTxResponse = ({ memo, ownerName, ...rest }) => {
+export const erc20ToTxResponse = ({
+  memo,
+  ownerName,
+  contactName,
+  isDeposit,
+  ...rest
+}) => {
   return {
     tx_hash: rest.hash,
     from_addr: rest.from,
@@ -14,16 +20,23 @@ export const erc20ToTxResponse = ({ memo, ownerName, ...rest }) => {
 
     memo: memo,
     owner: ownerName,
+    contact_name: contactName,
+    isDeposit: isDeposit,
     type: 'ERC20',
 
     rate: 1234,
     labels: [],
-    contact_name: null,
     tx_actions: null,
   };
 };
 
-export const erc721ToTxResponse = ({ memo, ownerName, ...rest }) => {
+export const erc721ToTxResponse = ({
+  memo,
+  ownerName,
+  contactName,
+  isDeposit,
+  ...rest
+}) => {
   return {
     tx_hash: rest.hash,
     from_addr: rest.from,
@@ -39,16 +52,23 @@ export const erc721ToTxResponse = ({ memo, ownerName, ...rest }) => {
 
     memo: memo,
     owner: ownerName,
+    contact_name: contactName,
+    isDeposit: isDeposit,
     type: 'ERC721',
 
     rate: 1234,
     tx_actions: null,
     labels: [],
-    contact_name: null,
   };
 };
 
-export const erc1155ToTxResponse = ({ memo, ownerName, ...rest }) => {
+export const erc1155ToTxResponse = ({
+  memo,
+  ownerName,
+  contactName,
+  isDeposit,
+  ...rest
+}) => {
   return {
     tx_hash: rest.hash,
     from_addr: rest.from,
@@ -64,11 +84,12 @@ export const erc1155ToTxResponse = ({ memo, ownerName, ...rest }) => {
 
     memo: memo,
     owner: ownerName,
+    contact_name: contactName,
+    isDeposit: isDeposit,
     type: 'ERC1155',
 
     rate: 1234,
     tx_actions: null,
     labels: [],
-    contact_name: null,
   };
 };

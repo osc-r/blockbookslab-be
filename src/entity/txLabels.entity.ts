@@ -11,6 +11,7 @@ export class TxLabels {
   @ManyToOne(
     () => TransactionDetail,
     (transactionDetail) => transactionDetail.txLabels,
+    { orphanedRowAction: 'delete' },
   )
   @JoinColumn({
     name: 'transaction_detail_id',

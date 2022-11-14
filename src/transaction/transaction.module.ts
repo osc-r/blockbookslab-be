@@ -8,6 +8,7 @@ import { Erc20TransactionRepository } from 'src/repository/erc20Transaction.repo
 import { Erc721TransactionRepository } from 'src/repository/erc721Transaction.repository';
 import { TransactionRepository } from 'src/repository/transaction.repository';
 import { TransactionDetailRepository } from 'src/repository/transactionDetail.repository';
+import { TxLabelsRepository } from 'src/repository/txLabels.repository';
 import { TransactionController } from './transaction.controller';
 import { TransactionProcessor } from './transaction.processor';
 import { TransactionService } from './transaction.service';
@@ -29,6 +30,7 @@ import { TransactionService } from './transaction.service';
     Erc1155TransactionRepository,
     TransactionDetailRepository,
     TransactionService,
+    TxLabelsRepository,
   ],
 })
 export class TransactionModule {}

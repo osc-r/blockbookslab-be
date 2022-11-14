@@ -6,7 +6,7 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { TxLabels } from './txLabels.entity';
+import type { TxLabels } from './txLabels.entity';
 import { User } from './user.entity';
 
 @Entity({ name: 'transaction_detail' })
@@ -37,6 +37,8 @@ export class TransactionDetail {
   createdBy: User;
 
   //
-  @OneToMany(() => TxLabels, (txLabel) => txLabel.transactionDetail)
+  @OneToMany('TxLabels', 'transactionDetail', {
+    cascade: ['insert', 'update', 'remove'],
+  })
   txLabels: TxLabels[];
 }
