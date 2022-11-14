@@ -216,7 +216,6 @@ export class TransactionRepository extends Repository<Transaction> {
     } else if (ERC721.length !== 0) {
       if (ERC721.length === 1 && ERC721[0].isDeposit === true) {
         response.action = `Mint ${ERC721[0].symbol} id: ${ERC721[0].tokenId}`;
-        response.type = 'ERC721';
       }
     } else if (ERC1155.length !== 0) {
     } else {
