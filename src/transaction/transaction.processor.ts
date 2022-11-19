@@ -71,7 +71,8 @@ export class TransactionProcessor {
               page: pageNumber,
               offset,
               startblock: 0,
-              sort: 'asc',
+              // sort: 'asc',
+              sort: 'desc',
               apikey: 'NA62M9YK9EFNQZKM15A538EEB9N9E4P5YK',
             },
           });
@@ -109,7 +110,7 @@ export class TransactionProcessor {
                 break;
             }
           }
-          if (response.data.result.length < offset) {
+          if (response.data.result.length <= offset) {
             this.logger.debug(`fetch ${action} for ${address} completed.`);
             clearInterval(timer);
             if (response.data.result.length > 0) {
@@ -126,7 +127,7 @@ export class TransactionProcessor {
           clearInterval(timer);
           res(false);
         }
-      }, 1000);
+      }, 10000);
     });
   }
 

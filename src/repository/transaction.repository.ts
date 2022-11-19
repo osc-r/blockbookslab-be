@@ -32,7 +32,7 @@ export class TransactionRepository extends Repository<Transaction> {
       AND t.value = '0' 
       AND t.is_error = '0' 
       AND t.function_name != ''
-      AND (t."from" = $1 OR t."to" = $1) `,
+      AND (t."from" = $1 OR t."to" = $1) LIMIT 100`,
       [address],
     );
   }
