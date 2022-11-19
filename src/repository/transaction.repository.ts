@@ -139,8 +139,8 @@ export class TransactionRepository extends Repository<Transaction> {
           'ERC1155' as "type" 
         FROM erc1155_transaction et2 INNER JOIN "transaction" t ON t.hash = et2.hash
       )a
-  LEFT JOIN transaction_detail td ON td.tx_hash = a.tx_hash
   LEFT JOIN wallet w ON w.address = a."from_addr" OR w.address = a."to_addr"
+  LEFT JOIN transaction_detail td ON td.tx_hash = a.tx_hash AND td.created_by = w.created_by
   WHERE a.tx_hash = $1 AND w.created_by = $2`;
 
     const results = await this.query(q, [hash, userId]);
