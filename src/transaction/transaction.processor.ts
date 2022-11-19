@@ -1,4 +1,4 @@
-import { Process, Processor } from '@nestjs/bull';
+import { OnQueueCompleted, Process, Processor } from '@nestjs/bull';
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { DoneCallback, Job } from 'bull';
@@ -15,9 +15,22 @@ import { Erc721Transaction } from 'src/entity/erc721Transaction.entity';
 import { TransactionDetail } from 'src/entity/transactionDetail.entity';
 import { TransactionDetailRepository } from 'src/repository/transactionDetail.repository';
 
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server } from 'socket.io';
+import { CryptoWalletRepository } from 'src/repository/cryptoWallet.repository';
+import { CryptoWallet } from 'src/entity/cryptoWallet.entity';
+
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 @Processor('transaction')
 @Injectable({})
 export class TransactionProcessor {
+  @WebSocketServer()
+  server: Server;
+
   constructor(
     private readonly httpService: HttpService,
     private transactionRepository: TransactionRepository,
@@ -25,6 +38,7 @@ export class TransactionProcessor {
     private erc721TransactionRepository: Erc721TransactionRepository,
     private erc1155TransactionRepository: Erc1155TransactionRepository, // private internalTransactionRepository: InternalTransactionRepository,
     private transactionDetailRepository: TransactionDetailRepository,
+    private cryptoWalletRepository: CryptoWalletRepository,
   ) {}
 
   private readonly logger = new Logger(TransactionProcessor.name);
@@ -98,7 +112,14 @@ export class TransactionProcessor {
           if (response.data.result.length < offset) {
             this.logger.debug(`fetch ${action} for ${address} completed.`);
             clearInterval(timer);
-            res(pages);
+            if (response.data.result.length > 0) {
+              res(
+                response.data.result[response.data.result.length - 1]
+                  .blockNumber,
+              );
+            } else {
+              res('0');
+            }
           }
         } catch (error) {
           this.logger.debug(`fetch ${action} for ${address} failed.`, error);
@@ -109,9 +130,15 @@ export class TransactionProcessor {
     });
   }
 
-  async actionGenerator() {
-    const txList = await this.transactionRepository.getTxForActionGenerator();
+  async actionGenerator(address: string) {
+    const txList = await this.transactionRepository.getTxForActionGenerator(
+      address,
+    );
     const done = [];
+
+    if (txList.length === 0) {
+      return true;
+    }
 
     return new Promise((res) => {
       const timer = setInterval(async () => {
@@ -182,6 +209,17 @@ export class TransactionProcessor {
     });
   }
 
+  @OnQueueCompleted()
+  onActive(job: Job) {
+    console.log(
+      `Processing job ${job.id} of type ${job.name} with data ${job.data}...`,
+    );
+    this.server.emit('SYNCED_TRANSACTION_JOB', {
+      success: true,
+      address: job.data.address,
+    });
+  }
+
   @Process('transcode')
   async handleTranscode(
     job: Job<{ address: string; chainId: string }>,
@@ -189,15 +227,15 @@ export class TransactionProcessor {
   ) {
     this.logger.debug('Start get transaction');
 
-    const success = await this.getData<Transaction>(
+    const blockNumber = await this.getData<Transaction>(
       job.data.address,
       job.data.chainId || '1',
       'txlist',
     );
 
-    this.logger.debug({ pages: success });
+    this.logger.debug({ blockNumber });
 
-    if (success) {
+    if (blockNumber) {
       const result = Promise.all([
         this.getData<Erc20Transaction>(
           job.data.address,
@@ -222,12 +260,27 @@ export class TransactionProcessor {
     this.logger.debug('End get transaction');
 
     this.logger.debug('Start action generator');
-    const actionResult = await this.actionGenerator();
+    const actionResult = await this.actionGenerator(job.data.address);
     this.logger.debug({ actionResult });
     this.logger.debug('End action generator');
 
-    actionResult
-      ? cb(null, actionResult)
-      : cb(new Error('Failed to fetch transaction'));
+    if (actionResult) {
+      let cryptoWallet = await this.cryptoWalletRepository.findOneBy({
+        address: job.data.address,
+        chainId: '1',
+      });
+
+      if (!cryptoWallet) {
+        cryptoWallet = new CryptoWallet();
+        cryptoWallet.chainId = '1';
+        cryptoWallet.address = job.data.address;
+        cryptoWallet.latestBlock = `${blockNumber}`;
+      }
+
+      await this.cryptoWalletRepository.save(cryptoWallet);
+      cb(null, actionResult);
+    } else {
+      cb(new Error('Failed to fetch transaction'));
+    }
   }
 }

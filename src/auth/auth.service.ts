@@ -5,6 +5,10 @@ import { generateNonce, SiweMessage } from 'siwe';
 import { VerifyLoginDto } from 'src/dto/verifyLogin.dto';
 import { UserRepository } from 'src/repository/user.repository';
 import { JwtService } from '@nestjs/jwt';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
+import { randomUUID } from 'crypto';
+import { CryptoWalletRepository } from 'src/repository/cryptoWallet.repository';
 
 @Injectable({})
 export class AuthService {
@@ -13,6 +17,8 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private userRepository: UserRepository,
+    private cryptoWalletRepository: CryptoWalletRepository,
+    @InjectQueue('transaction') private readonly transactionQueue: Queue,
   ) {}
 
   async getNonce() {
@@ -34,7 +40,27 @@ export class AuthService {
       user = await this.userRepository.createNewUser(address);
     }
 
-    return { accessToken: this.jwtService.sign({ sub: user.id }) };
+    const isSynced = await this.cryptoWalletRepository.findOneBy({
+      address,
+      chainId: '1',
+    });
+
+    const response = {
+      address,
+      accessToken: this.jwtService.sign({ sub: user.id }),
+      isSynced: true,
+      jobId: null,
+    };
+
+    if (!isSynced) {
+      const jobId = randomUUID();
+      this.transactionQueue.add('transcode', { address }, { jobId });
+
+      response.isSynced = false;
+      response.jobId = jobId;
+    }
+
+    return response;
   }
 }
 

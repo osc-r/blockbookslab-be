@@ -6,9 +6,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { Wallet } from 'src/entity/wallet.entity';
+import { BullModule } from '@nestjs/bull';
+import { CryptoWalletRepository } from 'src/repository/cryptoWallet.repository';
 
 @Module({
   imports: [
+    BullModule.registerQueue({
+      name: 'transaction',
+    }),
     TypeOrmModule.forFeature([User, Wallet]),
     JwtModule.register({
       secret: 'TEST',
@@ -16,7 +21,6 @@ import { Wallet } from 'src/entity/wallet.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserRepository],
-  exports: [UserRepository],
+  providers: [AuthService, UserRepository, CryptoWalletRepository],
 })
 export class AuthModule {}

@@ -23,6 +23,7 @@ import { Erc20Transaction } from './entity/erc20Transaction.entity';
 import { Erc1155Transaction } from './entity/erc1155Transaction.entity';
 import { ContactModule } from './contact/contact.module';
 import { LabelModule } from './label/label.module';
+import { CryptoWallet } from './entity/cryptoWallet.entity';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { LabelModule } from './label/label.module';
           Erc721Transaction,
           Erc20Transaction,
           Erc1155Transaction,
+          CryptoWallet,
         ],
         synchronize: true,
         logging: false,

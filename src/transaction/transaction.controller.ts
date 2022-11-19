@@ -1,7 +1,7 @@
 import { InjectQueue } from '@nestjs/bull';
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import { Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { Queue } from 'bull';
-import { TransactionDetailRequestDto } from 'src/dto/transactionDetailRequest.dto';
+import { randomUUID } from 'crypto';
 import { Public } from 'src/helper/jwt-auth.guard';
 import { TransactionService } from './transaction.service';
 
@@ -26,7 +26,7 @@ export class TransactionController {
       jobDetail: await this.transactionQueue.add(
         'transcode',
         { address: address },
-        { jobId: address },
+        { jobId: randomUUID() },
       ),
     };
   }

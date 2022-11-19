@@ -9,7 +9,9 @@ export class TransactionRepository extends Repository<Transaction> {
     super(Transaction, dataSource.createEntityManager());
   }
 
-  async getTxForActionGenerator(): Promise<
+  async getTxForActionGenerator(
+    address: string,
+  ): Promise<
     { hash: string; from: string; to: string; functionName: string }[]
   > {
     return await this.query(
@@ -29,7 +31,9 @@ export class TransactionRepository extends Repository<Transaction> {
       ) a) 
       AND t.value = '0' 
       AND t.is_error = '0' 
-      AND t.function_name != ''`,
+      AND t.function_name != ''
+      AND (t."from" = $1 OR t."to" = $1) `,
+      [address],
     );
   }
 

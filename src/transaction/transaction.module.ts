@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TransactionDetail } from 'src/entity/transactionDetail.entity';
+import { CryptoWalletRepository } from 'src/repository/cryptoWallet.repository';
 import { Erc1155TransactionRepository } from 'src/repository/erc1155Transaction.repository';
 import { Erc20TransactionRepository } from 'src/repository/erc20Transaction.repository';
 import { Erc721TransactionRepository } from 'src/repository/erc721Transaction.repository';
@@ -31,6 +32,7 @@ import { TransactionService } from './transaction.service';
     TransactionDetailRepository,
     TransactionService,
     TxLabelsRepository,
+    CryptoWalletRepository,
   ],
 })
 export class TransactionModule {}
