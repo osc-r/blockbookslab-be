@@ -1,5 +1,5 @@
-import * as EpnsAPI from '@epnsproject/sdk-restapi';
-import * as ethers from 'ethers';
+// import * as EpnsAPI from '@epnsproject/sdk-restapi';
+// import * as ethers from 'ethers';
 import { Injectable, Logger } from '@nestjs/common';
 import { generateNonce, SiweMessage } from 'siwe';
 import { VerifyLoginDto } from 'src/dto/verifyLogin.dto';
@@ -35,10 +35,6 @@ export class AuthService {
     }
 
     return { accessToken: this.jwtService.sign({ sub: user.id }) };
-  }
-
-  async testCreateUser(address: string) {
-    return await this.userRepository.createNewUser(address);
   }
 }
 
