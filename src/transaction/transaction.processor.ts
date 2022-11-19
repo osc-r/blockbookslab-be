@@ -21,9 +21,7 @@ import { CryptoWalletRepository } from 'src/repository/cryptoWallet.repository';
 import { CryptoWallet } from 'src/entity/cryptoWallet.entity';
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
+  cors: true,
 })
 @Processor('transaction')
 @Injectable({})
