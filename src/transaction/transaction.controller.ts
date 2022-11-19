@@ -48,28 +48,22 @@ export class TransactionController {
 
   @Post('/details')
   async createTransactionDetail(@Req() req) {
-    const x = await this.transactionService.createTransactionDetail(
+    await this.transactionService.createTransactionDetail(
       req.body,
       req.user?.userId,
     );
-    console.log(x);
     return true;
   }
 
   @Post('/details/memo')
   async createTransactionDetailMemo(@Req() req) {
-    const x = await this.transactionService.addMemo(req.body, req.user?.userId);
-    console.log(x);
+    await this.transactionService.addMemo(req.body, req.user?.userId);
     return true;
   }
 
   @Post('/details/labels')
   async createTransactionDetailLabels(@Req() req) {
-    const x = await this.transactionService.addLabel(
-      req.body,
-      req.user?.userId,
-    );
-    console.log(x);
+    await this.transactionService.addLabel(req.body, req.user?.userId);
     return true;
   }
 }
