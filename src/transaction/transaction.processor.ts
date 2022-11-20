@@ -20,9 +20,7 @@ import { Server } from 'socket.io';
 import { CryptoWalletRepository } from 'src/repository/cryptoWallet.repository';
 import { CryptoWallet } from 'src/entity/cryptoWallet.entity';
 
-@WebSocketGateway({
-  cors: true,
-})
+@WebSocketGateway({ perMessageDeflate: true, cors: true })
 @Processor('transaction')
 @Injectable({})
 export class TransactionProcessor {
