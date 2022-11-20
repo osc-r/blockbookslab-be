@@ -1,5 +1,14 @@
 version: '3.8'
 services:
+  nginx:
+    image: nginx:1.23-alpine
+    volumes:
+      - ./nginx:/etc/nginx
+    ports:
+    - 80:80
+    restart: always
+    depends_on:
+    - service
   postgres:
     image: postgres:13
     ports:
@@ -10,6 +19,8 @@ services:
       POSTGRES_DB: blockbooks
   redis:
     image: redis:7.0-alpine
+    ports:
+      - 6379:6379
   service:
     build: .
     volumes:

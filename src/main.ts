@@ -6,10 +6,10 @@ import * as fs from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    httpsOptions: {
-      key: fs.readFileSync('certificates/key.pem'),
-      cert: fs.readFileSync('certificates/cert.pem'),
-    },
+    // httpsOptions: {
+    //   key: fs.readFileSync('certificates/key.pem'),
+    //   cert: fs.readFileSync('certificates/cert.pem'),
+    // },
   });
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
