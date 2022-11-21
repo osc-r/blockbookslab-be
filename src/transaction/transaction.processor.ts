@@ -15,7 +15,12 @@ import { Erc721Transaction } from 'src/entity/erc721Transaction.entity';
 import { TransactionDetail } from 'src/entity/transactionDetail.entity';
 import { TransactionDetailRepository } from 'src/repository/transactionDetail.repository';
 
-import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  SubscribeMessage,
+  MessageBody,
+} from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { CryptoWalletRepository } from 'src/repository/cryptoWallet.repository';
 import { CryptoWallet } from 'src/entity/cryptoWallet.entity';
@@ -204,6 +209,11 @@ export class TransactionProcessor {
         }
       }, 800);
     });
+  }
+
+  @SubscribeMessage('events')
+  handleEvent(x: any, y: any) {
+    console.log('message triggered by websocket event', { x, y });
   }
 
   @OnQueueCompleted()
