@@ -51,7 +51,7 @@ export class TransactionProcessor {
   ) {
     return new Promise((res) => {
       const pages: { page: number; endblock: string }[] = [];
-      const offset = 100;
+      const offset = 30;
 
       const timer = setInterval(async () => {
         try {
