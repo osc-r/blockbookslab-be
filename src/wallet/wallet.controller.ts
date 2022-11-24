@@ -15,7 +15,7 @@ export class WalletController {
     return await this.walletService.createWallet(
       req.user.userId,
       req.body.name,
-      req.body.address,
+      req.body.address.toLowerCase(),
     );
   }
 }
