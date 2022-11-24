@@ -45,15 +45,36 @@ export class TransactionService {
           case 'ERC20':
             return this.erc20TransactionRepository
               .findOneByHash(i.hash, userId)
-              .then((erc20) => erc20ToTxResponse(erc20));
+              .then(async (erc20) => {
+                const labels =
+                  await this.txLabelsRepository.findByTxHashAndUserId(
+                    erc20.hash,
+                    userId,
+                  );
+                return erc20ToTxResponse({ ...erc20, labels });
+              });
           case 'ERC721':
             return this.erc721TransactionRepository
               .findOneByHash(i.hash, userId)
-              .then((erc721) => erc721ToTxResponse(erc721));
+              .then(async (erc721) => {
+                const labels =
+                  await this.txLabelsRepository.findByTxHashAndUserId(
+                    erc721.hash,
+                    userId,
+                  );
+                return erc721ToTxResponse({ ...erc721, labels });
+              });
           case 'ERC1155':
             return this.erc1155TransactionRepository
               .findOneByHash(i.hash, userId)
-              .then((erc1155) => erc1155ToTxResponse(erc1155));
+              .then(async (erc1155) => {
+                const labels =
+                  await this.txLabelsRepository.findByTxHashAndUserId(
+                    erc1155.hash,
+                    userId,
+                  );
+                return erc1155ToTxResponse({ ...erc1155, labels });
+              });
           case 'NORMAL':
             return this.transactionRepository
               .getNormalTransactionWithRelationshipByHash(i.hash, userId)

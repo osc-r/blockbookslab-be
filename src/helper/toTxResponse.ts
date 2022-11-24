@@ -3,6 +3,7 @@ export const erc20ToTxResponse = ({
   ownerName,
   contactName,
   isDeposit,
+  labels,
   ...rest
 }) => {
   return {
@@ -25,7 +26,7 @@ export const erc20ToTxResponse = ({
     type: 'ERC20',
 
     rate: 1234,
-    labels: [],
+    labels: labels,
     tx_actions: null,
   };
 };
@@ -35,6 +36,7 @@ export const erc721ToTxResponse = ({
   ownerName,
   contactName,
   isDeposit,
+  labels,
   ...rest
 }) => {
   return {
@@ -58,7 +60,7 @@ export const erc721ToTxResponse = ({
 
     rate: 1234,
     tx_actions: null,
-    labels: [],
+    labels: labels,
   };
 };
 
@@ -67,6 +69,7 @@ export const erc1155ToTxResponse = ({
   ownerName,
   contactName,
   isDeposit,
+  labels,
   ...rest
 }) => {
   return {
@@ -90,6 +93,6 @@ export const erc1155ToTxResponse = ({
 
     rate: 1234,
     tx_actions: null,
-    labels: [],
+    labels: labels,
   };
 };
