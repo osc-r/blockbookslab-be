@@ -1,12 +1,6 @@
 import { Column } from 'typeorm';
 
 export abstract class BaseTransaction {
-  @Column({ name: 'from', nullable: false })
-  from: string;
-
-  @Column({ name: 'to', nullable: false })
-  to: string;
-
   @Column({ name: 'contract_address', nullable: false })
   contractAddress: string;
 
@@ -15,9 +9,6 @@ export abstract class BaseTransaction {
 
   @Column({ name: 'gas_price', nullable: false })
   gasPrice: string;
-
-  @Column({ name: 'block_number', nullable: false })
-  blockNumber: string;
 
   @Column({ name: 'time_stamp', nullable: false })
   timeStamp: string;

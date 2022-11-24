@@ -1,12 +1,17 @@
-import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 import { BaseTransaction } from './baseTransaction';
-import { TransactionDetail } from './transactionDetail.entity';
 
 @Entity({ name: 'transaction' })
 export class Transaction extends BaseTransaction {
   @PrimaryColumn()
   hash: string;
+
+  @Column({ name: 'from', nullable: false })
+  from: string;
+
+  @Column({ name: 'to', nullable: false })
+  to: string;
 
   @Column({ name: 'chain_id', nullable: false })
   chainId: string;
@@ -22,4 +27,7 @@ export class Transaction extends BaseTransaction {
 
   @Column({ name: 'function_name', nullable: false })
   functionName: string;
+
+  @Column({ name: 'block_number', nullable: false })
+  blockNumber: string;
 }

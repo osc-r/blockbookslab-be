@@ -44,7 +44,9 @@ export class TransactionProcessor {
 
   private readonly logger = new Logger(TransactionProcessor.name);
 
-  async getData<T extends { chainId?: string } & BaseTransaction>(
+  async getData<
+    T extends { chainId?: string; blockNumber: string } & BaseTransaction,
+  >(
     address: string,
     chainId: string,
     action: 'txlist' | 'tokentx' | 'tokennfttx' | 'token1155tx',

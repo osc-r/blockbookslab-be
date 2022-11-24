@@ -1,15 +1,18 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 import { BaseTransaction } from './baseTransaction';
 
 @Entity({ name: 'erc721_transaction' })
 export class Erc721Transaction extends BaseTransaction {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryColumn({ name: 'from', nullable: false })
+  from: string;
 
-  @Column({ name: 'hash', nullable: false })
+  @PrimaryColumn({ name: 'to', nullable: false })
+  to: string;
+
+  @PrimaryColumn({ name: 'hash', nullable: false })
   hash: string;
 
-  @Column({ name: 'token_id', nullable: false })
+  @PrimaryColumn({ name: 'token_id', nullable: false })
   tokenID: string;
 
   @Column({ name: 'token_name', nullable: false })
@@ -20,4 +23,7 @@ export class Erc721Transaction extends BaseTransaction {
 
   @Column({ name: 'token_decimal', nullable: false })
   tokenDecimal: string;
+
+  @Column({ name: 'block_number', nullable: false })
+  blockNumber: string;
 }

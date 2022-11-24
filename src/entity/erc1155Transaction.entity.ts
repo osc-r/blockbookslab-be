@@ -6,11 +6,20 @@ export class Erc1155Transaction extends BaseTransaction {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ name: 'from', nullable: false })
+  from: string;
+
+  @Column({ name: 'to', nullable: false })
+  to: string;
+
   @Column({ name: 'hash', nullable: false })
   hash: string;
 
   @Column({ name: 'token_id', nullable: false })
   tokenID: string;
+
+  @Column({ name: 'token_value', nullable: false })
+  tokenValue: string;
 
   @Column({ name: 'token_name', nullable: false })
   tokenName: string;
@@ -18,6 +27,6 @@ export class Erc1155Transaction extends BaseTransaction {
   @Column({ name: 'token_symbol', nullable: false })
   tokenSymbol: string;
 
-  @Column({ name: 'token_value', nullable: false })
-  tokenValue: string;
+  @Column({ name: 'block_number', nullable: false })
+  blockNumber: string;
 }

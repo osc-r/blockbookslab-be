@@ -1,12 +1,15 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 import { BaseTransaction } from './baseTransaction';
 
 @Entity({ name: 'erc20_transaction' })
 export class Erc20Transaction extends BaseTransaction {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryColumn({ name: 'from', nullable: false })
+  from: string;
 
-  @Column({ name: 'hash', nullable: false })
+  @PrimaryColumn({ name: 'to', nullable: false })
+  to: string;
+
+  @PrimaryColumn({ name: 'hash', nullable: false })
   hash: string;
 
   @Column({ name: 'token_name', nullable: false })
@@ -20,4 +23,7 @@ export class Erc20Transaction extends BaseTransaction {
 
   @Column({ name: 'value', nullable: false })
   value: string;
+
+  @Column({ name: 'block_number', nullable: false })
+  blockNumber: string;
 }
